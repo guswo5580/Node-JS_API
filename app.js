@@ -11,7 +11,7 @@ const { sequelize } = require('./models');
 const passportConfig = require('./passport');
 const authRouter = require('./routes/auth');
 const indexRouter = require('./routes');
-// const v1 = require('./routes/v1');
+const v1 = require('./routes/v1');
 // const v2 = require('./routes/v2');
 
 const app = express();
@@ -40,7 +40,7 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.use('/v1', v1);
+app.use('/v1', v1);
 // app.use('/v2', v2);
 app.use('/auth', authRouter);
 app.use('/', indexRouter);
