@@ -5,10 +5,11 @@ const { User , Domain } = require('../models');
 const router = express.Router();
 
 router.get('/', (req, res, next) => {
-    User.find({
-        where : { id : req.user && req.user.id},
-        include : { model : Domain }, 
-    })
+    if(req.user){
+        User.findOne({
+            where: { 'id' : req.user.id },
+            include : { model : Domain }, 
+        })
         .then( (user) => {
             res.render('login', {
                 user, 
@@ -20,6 +21,10 @@ router.get('/', (req, res, next) => {
             console.error(error);
             next(error);
         })
+    } else {
+        res.render('login');
+    }
+        
 });
 
 router.post('/domain', (req, res, next) => {
