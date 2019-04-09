@@ -1,17 +1,12 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-const { verifyToken } = require('./middlewares');
+const { verifyToken , apiLimiter} = require('./middlewares');
 const { Domain, User, Post, Hashtag } = require('../models');
 
 const router = express.Router();
 
-router.use(deprecated);
-//v2로 넘어가면서 v1의 api는 사용하지 못하도록 설정 
-//하나하나 미들웨어를 추가하기보다 
-//router.use로 router에 대해 한번에 실행할 수 있도록 
-
-router.post('/token', async (req, res) => {
+router.post('/token', apiLimiter, async (req, res) => {
   const { clientSecret } = req.body;
   try {
     const domain = await Domain.findOne({
@@ -48,7 +43,7 @@ router.post('/token', async (req, res) => {
   }
 });
 
-router.get('/test', verifyToken, (req, res) => {
+router.get('/test', apiLimiter, verifyToken, (req, res) => {
     res.json(req.decoded);
   });
 
@@ -75,7 +70,7 @@ router.get('/post/mine', verifyToken, (req, res) => {
     })
 });
 
-router.get('/posts/hashtag/:title', verifyToken, async (req, res) => {
+router.get('/posts/hashtag/:title', verifyToken, apiLimiter, async (req, res) => {
     //검색한 해시태그에 대한 게시글을 가져오는 경우 
     try {
         const hashtag = await Hashtag.find({
@@ -103,7 +98,7 @@ router.get('/posts/hashtag/:title', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/follower', verifyToken, async (req, res) => {
+router.get('/follower', apiLimiter, verifyToken, async (req, res) => {
     //팔로워 목록을 가져오는 경우 
     try {
         const user = await User.find({
@@ -128,7 +123,7 @@ router.get('/follower', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/following', verifyToken, async (req, res) => {
+router.get('/following', apiLimiter, verifyToken, async (req, res) => {
     try {
         const user = await User.find({
             where : {id : req.decoded.id}
