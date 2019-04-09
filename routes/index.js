@@ -3,13 +3,16 @@ const axios = require('axios');
 
 const router = express.Router();
 
+const version1 = 'v1';
+const version2 = 'v2';
+
 //Api 를 향해 client에서 발급받은 키를 통해 인증 받는 절차
 router.get('/test', async(req, res, next) => {
     try {
         if(!req.session.jwt){
             //세션에 토큰이 저장되어 있는지 확인 후 
             //없다면 API 서버를 향해 발급받은 key를 통해 token 발급을 요청
-            const tokenResult = await axios.post('http://localhost:8002/v1/token',{
+            const tokenResult = await axios.post(`http://localhost:8002/${version2}/token`,{
                 clientSecret : process.env.CLIENT_SECRET 
             });
             //token을 받았다면 세션에 저장
@@ -21,7 +24,7 @@ router.get('/test', async(req, res, next) => {
             }
         }
         //토큰이 존재하거나 발급을 받았다면 api요청문을 보낸다 
-        const result = await axios.get('http://localhost:8002/v1/test', {
+        const result = await axios.get(`http://localhost:8002/${version2}/test`, {
             headers : { authorization : req.session.jwt }, 
         });
         return res.json(result.data);
@@ -42,12 +45,12 @@ router.get('/test', async(req, res, next) => {
 const request = async (req, api) => {
     try {
         if(!req.session.jwt){
-            const tokenResult = await axios.post('http://localhost:8002/v1/token',{
+            const tokenResult = await axios.post(`http://localhost:8002/${version2}/token`,{
                 clientSecret : process.env.CLIENT_SECRET
             });
             req.session.jwt = tokenResult.data.token;
         }
-        return await axios.get(`http://localhost:8002/v1${api}`,{
+        return await axios.get(`http://localhost:8002/${version2}${api}`,{
             //각 요청에서 어떤 정보를 api로 지정하느냐를 담아서 api를 요청한다
             headers : { authorization : req.session.jwt},
         });
