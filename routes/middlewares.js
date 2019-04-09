@@ -16,13 +16,13 @@ exports.isNotLoggedIn = (req, res, next) => {
   }
 };
 
-exports.verify = (req, res, next) => {
+exports.verifyToken = (req, res, next) => {
   try {
     req.decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
     return next();
   }catch(error){
     if(error.name === 'TokenExpiredError'){
-      return res.status(419).json({
+      return res.status(419).json({ 
         code : 419,
         message : 'Token is expried'
       });
