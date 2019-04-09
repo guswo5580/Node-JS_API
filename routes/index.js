@@ -37,4 +37,77 @@ router.get('/test', async(req, res, next) => {
     }
 });
 
+//토큰 만료되어 이용이 불가한 상황을 대비하여
+//토큰이 만료되었다면 토큰을 다시 발급받고 이용할 수 있도록 함수를 선언해주자
+const request = async (req, api) => {
+    try {
+        if(!req.session.jwt){
+            const tokenResult = await axios.post('http://localhost:8002/v1/token',{
+                clientSecret : process.env.CLIENT_SECRET
+            });
+            req.session.jwt = tokenResult.data.token;
+        }
+        return await axios.get(`http://localhost:8002/v1${api}`,{
+            //각 요청에서 어떤 정보를 api로 지정하느냐를 담아서 api를 요청한다
+            headers : { authorization : req.session.jwt},
+        });
+    }catch(error){
+        console.log(error);
+        if(error.response.status < 500 ){
+            return error.response;
+        }
+        throw error;
+    }
+};
+
+// Client ---> mypost ---> API's /posts/mine 
+router.get('/mypost', async (req, res, next) => {
+    try {
+        const result = await request(req, '/post/mine');
+        res.json(result.data);
+    } catch(error){
+        console.error(error);
+        next(error);
+    }
+}); 
+
+//Client ---> /search/:hashtag ---> API's /posts/hashtag/title
+router.get('/search/:hashtag', async (req, res, next) => {
+    try {
+        const result = await request(
+            req, `/posts/hashtag/${encodeURIComponent(req.params.hashtag)}`,
+            //encodeURIComponent = 주소 작성시 한글이 있으면 생기는 문제 해결
+        );
+        res.json(result.data);
+    }catch(error) {
+        console.error(error);
+        next(error);
+    }
+});
+
+//Client ---> /follower ---> API's /follower
+router.get('/follower', async (req, res, next) => {
+    try{
+        const result = await request(req, '/follower');
+        res.json(result.data);
+    }catch(error){
+        if(error.code){
+            console.log(error);
+            next(error);
+        }
+    }
+});
+
+//Client ---> /following ---> API's /following
+router.get('/following', async (req, res, next) => {
+    try{
+        const result = await request(req, '/following');
+        res.json(result.data);
+    }catch(error){
+        if(error.code){
+            console.log(error);
+            next(error);
+        }
+    }
+});
 module.exports = router;
