@@ -47,4 +47,54 @@ router.get('/test', verifyToken, (req, res) => {
     res.json(req.decoded);
   });
 
+router.get('/post/mine', verifyToken, (req, res) => {
+    //내가 작성한 게시글을 가져오기
+    Post.findAll({
+        where : {userId : req.decoded.id}
+        //Post db에서 나의 id를 대조하여 모든 post를 가져온다 
+    })
+    .then((posts) => {
+        console.log(posts);
+        res.json({
+            code : 200,
+            payload : posts
+            //응답 코드와 함께 모든 게시글 응답 
+        });
+    })
+    .catch((error) => {
+        console.error(error);
+        return res.status(500).json({
+            code : 500,
+            message : 'server error'
+        });
+    })
+});
+
+router.get('/posts/hashtag/:title', verifyToken, async (req, res) => {
+    //검색한 해시태그에 대한 게시글을 가져오는 경우 
+    try {
+        const hashtag = await Hashtag.find({
+            //해시태그 db에서 모든 글을 찾는다
+            where : { title : req.params.title}
+        })
+        if(!hashtag){
+            //없다면 없음을 반환
+            return res.status(404).json({
+                code : 404,
+                message : "검색결과 없음"
+            });
+        }
+        const posts = await hashtag.getPosts();
+        //검색결과가 있다면 getPost 연결 db를 검색하여 정보를 반환 
+        return res.json({
+            code : 200,
+            payload : posts
+        });
+    }catch(error){
+        return res.status(500).json({
+            code : 500,
+            message : 'server error'
+        });
+    }
+});
 module.exports = router;
