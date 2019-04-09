@@ -97,4 +97,51 @@ router.get('/posts/hashtag/:title', verifyToken, async (req, res) => {
         });
     }
 });
+
+router.get('/follower', verifyToken, async (req, res) => {
+    //팔로워 목록을 가져오는 경우 
+    try {
+        const user = await User.find({
+            where : {id : req.decoded.id}
+            //id는 verifyToken에서 설정 decoded 내부의 id와 비교
+        });
+        const follower = await user.getFollowers({
+            attributes : ['id', 'nick'],
+        });
+        //연결 db를 불러오기 
+        return res.json({
+            code : 200,
+            follower,
+        });
+    }
+    catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            code : 500,
+            message : 'server error'
+        });
+    }
+});
+
+router.get('/following', verifyToken, async (req, res) => {
+    try {
+        const user = await User.find({
+            where : {id : req.decoded.id}
+        });
+        const following = await user.getFollowings({
+            attributes : ['id', 'nick'],
+        });
+        return res.json({
+            code : 200,
+            following,
+        });
+    }
+    catch(error) {
+        console.error(error);
+        return res.status(500).json({
+            code : 500,
+            message : 'server error'
+        });
+    }
+});
 module.exports = router;
