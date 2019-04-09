@@ -1,5 +1,6 @@
 # Node JS 
 
-## This project has two branches API and Socket
+## This project has three branches client , api, main server
 
-## Using Node JS for simple project
+## This project is a basic project for making an api server in vue-sns repository 
+
