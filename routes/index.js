@@ -113,4 +113,12 @@ router.get('/following', async (req, res, next) => {
         }
     }
 });
+
+//CORS Error에 발생 여부 확인
+//프론트 내에서 origin (localhost:8000) -> (localhost:8001)
+//등으로 origin 이 변화되며 요청을 보낼 경우 
+//내부에 access header가 존재하지 않아 문제가 생긴다 
+router.get('/', (req, res) => {
+    res.render('main', { key : process.env.CLIENT_SECRET});
+});
 module.exports = router;
