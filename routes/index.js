@@ -26,9 +26,12 @@ router.get('/', (req, res, next) => {
     }
         
 });
-
+         
 router.post('/domain', (req, res, next) => {
-    
+    if(req.body.host.indexOf('http://' || 'https://') != -1 ){
+        const ModifyHost = req.body.host.replace('http://' || 'https://', ""); 
+        //CORS error 시 url.parse 의 origin 값에 http , https 가 들어가면 error 발생
+        //에러 방지를 위해 db에 저장하기 전 검사를 해준다   
         Domain.create({
             userId : req.user.id,
             host : ModifyHost,
@@ -42,6 +45,7 @@ router.post('/domain', (req, res, next) => {
                 console.error(error);
                 next(error);
             })
+        }
 });
 
 module.exports = router;
