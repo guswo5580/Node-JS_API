@@ -3,8 +3,30 @@ const jwt = require('jsonwebtoken');
 
 const { verifyToken , apiLimiter} = require('./middlewares');
 const { Domain, User, Post, Hashtag } = require('../models');
+const cors = require('cors');
+const url = require('url');
 
 const router = express.Router();
+
+// router.use(cors());
+//cors 모듈 -- origin header가 없는 origin 변화에 대한 정보 요청 시 발생하는 문제를 해결하는 모듈
+//모든 router에 적용할 것이라면 router.use로 사용 가능 
+
+router.use(async (req, res, next) => {
+    //DB에 저장되어있는 api를 요청한 Domain의 host 정보 get 
+    const domain = await Domain.find({
+        where : { host : url.parse(req.get('origin')).host },
+        //요청이 들어온 host에 대해 db의 host와 같은지 비교
+    });
+    if(domain){
+        //db에 일치하는 host가 있는 경우 cors 실행
+        cors({ origin : req.get('origin') })(req, res, next);    
+    }else {
+        //없다면 이용 x
+        next();
+    }
+});
+
 
 router.post('/token', apiLimiter, async (req, res) => {
   const { clientSecret } = req.body;
