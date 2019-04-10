@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.use(async (req, res, next) => {
     //DB에 저장되어있는 api를 요청한 Domain의 host 정보 get 
-    const domain = await Domain.find({
+    const domain = await Domain.findOne({
         where : { host : url.parse(req.get('origin')).host },
         //요청이 들어온 host에 대해 db의 host와 같은지 비교
     });
@@ -28,7 +28,7 @@ router.use(async (req, res, next) => {
 });
 
 router.use( async (req, res, next) => {
-    const domain = await Domain.find({
+    const domain = await Domain.findOne({
         where : { host : url.parse(req.get('origin')).host },
         //요청이 들어온 host에 대해 db의 host와 같은지 비교
     });

@@ -31,7 +31,7 @@ router.post('/token', async (req, res) => {
       id: domain.user.id,
       nick: domain.user.nick,
     }, process.env.JWT_SECRET, {
-      expiresIn: '1m', // 1분
+      expiresIn: '1h', // 1분
       issuer: 'peaceocean',
     });
     return res.json({

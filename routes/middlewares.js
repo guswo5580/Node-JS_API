@@ -48,8 +48,8 @@ exports.apiLimiter = new RateLimit({
     res.status(this.satusCode).json({
       code : this.statusCode, //429
       message : '1분에 한번만 요청해주세요'
-    })
-  }
+    });
+  },
 });
 
 //premium type 일 때 서버 사용량 제한 
