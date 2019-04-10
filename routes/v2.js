@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-const { verifyToken , apiLimiter} = require('./middlewares');
+const { verifyToken , premiumApiLimiter, apiLimiter} = require('./middlewares');
 const { Domain, User, Post, Hashtag } = require('../models');
 const cors = require('cors');
 const url = require('url');
@@ -27,8 +27,21 @@ router.use(async (req, res, next) => {
     }
 });
 
+router.use( async (req, res, next) => {
+    const domain = await Domain.find({
+        where : { host : url.parse(req.get('origin')).host },
+        //요청이 들어온 host에 대해 db의 host와 같은지 비교
+    });
+    if(domain.type === 'premium'){
+        premiumApiLimiter(req, res, next);
+        //domain type에 따라 다른 apiLimiter 를 적용
+        
+    }else {//type === free 
+        apiLimiter(req, res, next);
+    }
+});
 
-router.post('/token', apiLimiter, async (req, res) => {
+router.post('/token', async (req, res) => {
   const { clientSecret } = req.body;
   try {
     const domain = await Domain.findOne({
@@ -65,7 +78,7 @@ router.post('/token', apiLimiter, async (req, res) => {
   }
 });
 
-router.get('/test', apiLimiter, verifyToken, (req, res) => {
+router.get('/test', verifyToken, (req, res) => {
     res.json(req.decoded);
   });
 
@@ -92,7 +105,7 @@ router.get('/post/mine', verifyToken, (req, res) => {
     })
 });
 
-router.get('/posts/hashtag/:title', verifyToken, apiLimiter, async (req, res) => {
+router.get('/posts/hashtag/:title', verifyToken, async (req, res) => {
     //검색한 해시태그에 대한 게시글을 가져오는 경우 
     try {
         const hashtag = await Hashtag.find({
@@ -120,7 +133,7 @@ router.get('/posts/hashtag/:title', verifyToken, apiLimiter, async (req, res) =>
     }
 });
 
-router.get('/follower', apiLimiter, verifyToken, async (req, res) => {
+router.get('/follower', verifyToken, async (req, res) => {
     //팔로워 목록을 가져오는 경우 
     try {
         const user = await User.find({
@@ -145,7 +158,7 @@ router.get('/follower', apiLimiter, verifyToken, async (req, res) => {
     }
 });
 
-router.get('/following', apiLimiter, verifyToken, async (req, res) => {
+router.get('/following', verifyToken, async (req, res) => {
     try {
         const user = await User.find({
             where : {id : req.decoded.id}

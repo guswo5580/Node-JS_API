@@ -52,6 +52,23 @@ exports.apiLimiter = new RateLimit({
   }
 });
 
+//premium type 일 때 서버 사용량 제한 
+exports.premiumApiLimiter = new RateLimit({
+  windowMs : 60 * 1000,
+  //해당 시간 동안, ms기준 
+  max : 60,
+  //최대 횟수
+  delayMs : 0,
+  //요청 간 간격
+  handler(req, res) {
+    //어겼을 경우 메세지
+    res.status(this.satusCode).json({
+      code : this.statusCode, //429
+      message : '1분에 한번만 요청해주세요'
+    })
+  }
+});
+
 //새로운 api 서버를 만들었을 때,
 //기본의 api 서버는 사용이 불가능하도록 
 exports.deprecated = (req, res) => {
